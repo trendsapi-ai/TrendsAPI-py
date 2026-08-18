@@ -1,37 +1,115 @@
-# trendsapi-py - Python client for the Trends API
+# trendsapi (Python)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![API v1](https://img.shields.io/badge/API-v1-blue.svg)](https://trendsapi.ai) [![MCP compatible](https://img.shields.io/badge/MCP-compatible-blueviolet.svg)](https://modelcontextprotocol.io) [![Free tier](https://img.shields.io/badge/free%20tier-100%20req%2Fmo-orange.svg)](https://trendsapi.ai/#pricing)
+Official Python client for [Trends API](https://trendsapi.ai). Three methods. Decoded payloads. You never parse the HTTP `body` string.
 
-> **Trend data in three lines of Python.** Keyword trend time series and growth rates across Google Search, YouTube, TikTok, Reddit, Amazon, Wikipedia, npm, Steam and more - normalized to one 0-100 score.
+HTTP contract and field tables: [trendsapi-ai/trendsapi](https://github.com/trendsapi-ai/trendsapi).
 
-**Docs:** [https://trendsapi.ai/#quickstart](https://trendsapi.ai/#quickstart) · **API key (100 req/mo free):** [https://trendsapi.ai/#get-key](https://trendsapi.ai/#get-key)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![PyPI](https://img.shields.io/badge/pip-trendsapi-blue.svg)](https://pypi.org/project/trendsapi/)
+[![Python](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://trendsapi.ai)
 
----
-
-## Install
+## Authentication
 
 ```bash
 pip install trendsapi
+export TRENDSAPI_KEY=your_key
 ```
 
-Zero system dependencies. Python 3.9+.
-
-## Quickstart
+Key: [trendsapi.ai/#get-key](https://trendsapi.ai/#get-key). Python 3.9+.
 
 ```python
 from trendsapi import TrendsAPI
 
-client = TrendsAPI(api_key="YOUR_API_KEY")  # or set TRENDSAPI_KEY
-
-# 5-year weekly time series
-series = client.get_time_series(source="google search", keyword="bitcoin")
-
-# Period-over-period growth
-growth = client.get_growth(source="tiktok", keyword="bitcoin", percent_growth=["3M", "12M"])
-
-# What is trending right now (no keyword needed)
-trending = client.get_top_trends(type="Google Trends", limit=10)
+client = TrendsAPI()                    # TRENDSAPI_KEY
+# client = TrendsAPI(api_key="YOUR_KEY")
 ```
+
+## Methods
+
+| Method | REST `mode` | Required arguments | Returns |
+|---|---|---|---|
+| `get_time_series` | `get_time_series` | `source`, `keyword` | `list[dict]` of weekly points |
+| `get_growth` | `get_growth` | `source`, `keyword` | growth `dict` |
+| `get_top_trends` | `get_top_trends` | `type` | feed `dict` |
+
+```python
+weekly = client.get_time_series(source="google search", keyword="solar battery")
+growth = client.get_growth(source="amazon", keyword="solar battery", percent_growth=["3M", "12M"])
+now = client.get_top_trends(type="Google Trends", limit=10)
+```
+
+`source` is lowercase (`google search`). `type` is exact (`Google Trends`). Mixing them is a 400.
+
+## get_time_series
+
+```python
+points = client.get_time_series(source="google search", keyword="bitcoin")
+```
+
+Each point:
+
+| Field | Always | Meaning |
+|---|---|---|
+| `date` | yes | `YYYY-MM-DD` |
+| `value` | yes | 0-100 index for this series |
+| `keyword` | yes | Echo |
+| `volume` | no | Absolute volume when available |
+| `source` or `datatype` | no | Pipeline label |
+
+## get_growth
+
+```python
+g = client.get_growth(source="google search", keyword="nike", percent_growth=["12M", "3M", "YTD"])
+print(g["results"][0]["growth"], g["results"][0]["direction"])
+```
+
+`percent_growth` default: `["12M"]`. Presets: `7D` `14D` `30D` `1M` `2M` `3M` `6M` `9M` `12M`/`1Y` `18M` `24M`/`2Y` `36M`/`3Y` `48M` `60M`/`5Y` `MTD` `QTD` `YTD`. Custom: `{"name": "Launch", "recent": "2024-06-01", "baseline": "2024-01-01"}`.
+
+| Field | Meaning |
+|---|---|
+| `search_term` | Keyword |
+| `data_source` | Source |
+| `results` | One object per window (`period`, `growth`, `direction`, dates, values) |
+| `metadata` | Counts / success flag |
+
+Several windows still count as one request.
+
+## get_top_trends
+
+```python
+chart = client.get_top_trends(type="TikTok Trending Hashtags", limit=10)
+# chart["data"] == [[1, "matcha"], ...]
+```
+
+| Field | Meaning |
+|---|---|
+| `as_of_ts` | Snapshot time |
+| `type` | Feed name |
+| `limit`, `offset`, `count` | Pagination |
+| `data` | `[rank, label]` rows |
+
+Optional `offset=`, `category=` (`Amazon Best Sellers by Category`, `Top Websites` only).
+
+## Keyword sources
+
+Pass as `source=`. Full notes: [hub README](https://github.com/trendsapi-ai/trendsapi#keyword-sources).
+
+| `source` | `keyword` |
+|---|---|
+| `google search`, `google images`, `google news`, `google shopping` | Any phrase |
+| `youtube` | Any phrase |
+| `tiktok` | Hashtag or topic |
+| `reddit` | Subreddit, no `r/` |
+| `amazon` | Product phrase |
+| `wikipedia` | Article title |
+| `news volume`, `news sentiment` | Any phrase |
+| `app downloads`, `app rankings` | Android bundle ID (`com.openai.chatgpt`) |
+| `npm` | Exact package name |
+| `steam` | Game display name |
+
+## Live feeds
+
+Pass as `type=` on `get_top_trends`. Exact strings: `Google Trends`, `Google News Top News`, `TikTok Trending Hashtags`, `TikTok Trending Searches`, `TikTok Shop Hot Products`, `YouTube Trending`, `X (Twitter) Trending`, `Reddit Hot Posts`, `Reddit World News`, `Wikipedia Trending`, `Amazon Best Sellers Top Rated`, `Amazon Best Sellers by Category`, `App Store Top Free`, `App Store Top Paid`, `Google Play`, `Top Websites`, `Spotify Top Podcasts`, `Steam Most Played`, `GitHub Trending Repos`, `IMDb MOVIEmeter`, `Open Library Trending Books`.
 
 ## Async
 
@@ -39,109 +117,43 @@ trending = client.get_top_trends(type="Google Trends", limit=10)
 import asyncio
 from trendsapi import AsyncTrendsAPI
 
-async def main():
-    client = AsyncTrendsAPI(api_key="YOUR_API_KEY")
-    google, tiktok, reddit = await asyncio.gather(
-        client.get_time_series(source="google search", keyword="bitcoin"),
-        client.get_time_series(source="tiktok", keyword="bitcoin"),
-        client.get_time_series(source="reddit", keyword="bitcoin"),
+async def compare(term: str):
+    c = AsyncTrendsAPI()
+    return await asyncio.gather(
+        c.get_time_series(source="google search", keyword=term),
+        c.get_time_series(source="google shopping", keyword=term),
+        c.get_time_series(source="wikipedia", keyword=term),
     )
 
-asyncio.run(main())
+asyncio.run(compare("solar battery"))
 ```
 
-## Why not raw requests?
+Each 200 is one billed request.
 
-You can absolutely use `requests` against `https://api.trendsapi.ai/api` directly - the API is one POST endpoint. The client adds typed responses, retries with backoff, async support, and source/feed constants so you never typo a source name.
+## Pandas
 
-## Coverage
+```python
+import pandas as pd
+from trendsapi import TrendsAPI
 
-| Source | `source` value | What it measures |
-|---|---|---|
-| Google Search | `google search` | Search volume |
-| Google Images | `google images` | Image search volume |
-| Google News | `google news` | News search volume |
-| Google Shopping | `google shopping` | Shopping search volume |
-| YouTube | `youtube` | Search volume |
-| TikTok | `tiktok` | Hashtag volume |
-| Reddit | `reddit` | Subreddit subscribers |
-| Amazon | `amazon` | Product search volume |
-| Wikipedia | `wikipedia` | Page views |
-| News volume | `news volume` | Article mention volume |
-| News sentiment | `news sentiment` | Positive / negative score |
-| App downloads | `app downloads` | Android downloads (AppBrain) |
-| App rankings | `app rankings` | Android chart position |
-| npm | `npm` | Weekly package downloads |
-| Steam | `steam` | Concurrent players (monthly) |
-
-Plus 21 live trending feeds via `get_top_trends` - see the [main repo](https://github.com/trendsapi/trendsapi) for the full list.
-
-## Use it from your AI assistant (MCP)
-
-The same API key powers the Trends API MCP server, so Claude, Cursor, VS Code, ChatGPT and any MCP-compatible client can query this data in natural language.
-
-[**+ Add to Cursor (one click)**](cursor://anysphere.cursor-deeplink/mcp/install?name=trendsapi&config=eyJ1cmwiOiAiaHR0cHM6Ly9hcGkudHJlbmRzYXBpLmFpL21jcCIsICJoZWFkZXJzIjogeyJBdXRob3JpemF0aW9uIjogIkJlYXJlciBZT1VSX0FQSV9LRVkifX0=)
-
-**Cursor / Windsurf / Cline** (`~/.cursor/mcp.json` or equivalent):
-
-```json
-{
-  "mcpServers": {
-    "trendsapi": {
-      "url": "https://api.trendsapi.ai/mcp",
-      "transport": "http",
-      "headers": { "Authorization": "Bearer YOUR_API_KEY" }
-    }
-  }
-}
+df = pd.DataFrame(TrendsAPI().get_time_series(source="google search", keyword="solar battery"))
+df["date"] = pd.to_datetime(df["date"])
+print(df.set_index("date")["value"].resample("ME").mean().tail())
 ```
 
-**VS Code / GitHub Copilot** (`.vscode/mcp.json`):
+## Errors
 
-```json
-{
-  "servers": {
-    "trendsapi": {
-      "type": "http",
-      "url": "https://api.trendsapi.ai/mcp",
-      "headers": { "Authorization": "Bearer YOUR_API_KEY" }
-    }
-  }
-}
-```
+| Code | Client |
+|---|---|
+| 200 | Returns parsed payload |
+| 400 | Raises. Fix `source` / `type` |
+| 401 | Raises. Check `TRENDSAPI_KEY` |
+| 404 | Raises. No series. Do not retry |
+| 429 | Raises. Quota |
+| 5xx | Retries, then raises |
 
-**Claude Desktop** (`claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "trendsapi": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://api.trendsapi.ai/mcp", "--header", "Authorization:${AUTH_HEADER}"],
-      "env": { "AUTH_HEADER": "Bearer YOUR_API_KEY" }
-    }
-  }
-}
-```
-
-**Claude.ai (browser):** Settings -> Connectors -> Add custom connector -> `https://api.trendsapi.ai/mcp`
-
-Then ask things like:
-
-```
-How did "creatine gummies" grow on TikTok vs Google over the last 12 months?
-What is trending on YouTube right now?
-```
-
----
-
-## Links
-
-- **Docs & quickstart:** [https://trendsapi.ai/#quickstart](https://trendsapi.ai/#quickstart)
-- **llms.txt (machine-readable API reference):** [https://trendsapi.ai/llms.txt](https://trendsapi.ai/llms.txt)
-- **Pricing (free tier: 100 requests/month):** [https://trendsapi.ai/#pricing](https://trendsapi.ai/#pricing)
-- **Get an API key:** [https://trendsapi.ai/#get-key](https://trendsapi.ai/#get-key)
+Raw `requests` (second parse required): see [hub, Raw HTTP](https://github.com/trendsapi-ai/trendsapi#raw-http).
 
 ## License
 
-MIT - see [LICENSE](LICENSE). Data is served by [Trends API](https://trendsapi.ai); usage of the API itself is subject to the plan limits on your key.
+MIT. See [LICENSE](LICENSE).
