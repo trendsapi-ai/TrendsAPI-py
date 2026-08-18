@@ -28,9 +28,9 @@ client = TrendsAPI()                    # TRENDSAPI_KEY
 
 | Method | REST `mode` | Required arguments | Returns |
 |---|---|---|---|
-| `get_time_series` | `get_time_series` | `source`, `keyword` | `list[dict]` of weekly points |
-| `get_growth` | `get_growth` | `source`, `keyword` | growth `dict` |
-| `get_top_trends` | `get_top_trends` | `type` | feed `dict` |
+| `get_time_series` | `get_time_series` | `source`, `keyword` | `list[TrendsDataPoint]` |
+| `get_growth` | `get_growth` | `source`, `keyword` | `GetGrowthResponse` |
+| `get_top_trends` | `get_top_trends` | `type` | `GetTopTrendsResponse` |
 
 ```python
 weekly = client.get_time_series(source="google search", keyword="solar battery")
@@ -44,7 +44,10 @@ now = client.get_top_trends(type="Google Trends", limit=10)
 
 ```python
 points = client.get_time_series(source="google search", keyword="bitcoin")
+print(points[-1].date, points[-1].value)
 ```
+
+Python returns dataclasses. Use `.date` / `.value`, not `["date"]`.
 
 Each point:
 
@@ -60,7 +63,7 @@ Each point:
 
 ```python
 g = client.get_growth(source="google search", keyword="nike", percent_growth=["12M", "3M", "YTD"])
-print(g["results"][0]["growth"], g["results"][0]["direction"])
+print(g.results[0].growth, g.results[0].direction)
 ```
 
 `percent_growth` default: `["12M"]`. Presets: `7D` `14D` `30D` `1M` `2M` `3M` `6M` `9M` `12M`/`1Y` `18M` `24M`/`2Y` `36M`/`3Y` `48M` `60M`/`5Y` `MTD` `QTD` `YTD`. Custom: `{"name": "Launch", "recent": "2024-06-01", "baseline": "2024-01-01"}`.
@@ -78,7 +81,7 @@ Several windows still count as one request.
 
 ```python
 chart = client.get_top_trends(type="TikTok Trending Hashtags", limit=10)
-# chart["data"] == [[1, "matcha"], ...]
+# chart.data == [[1, "matcha"], ...]
 ```
 
 | Field | Meaning |
@@ -133,10 +136,11 @@ Each 200 is one billed request.
 ## Pandas
 
 ```python
+from dataclasses import asdict
 import pandas as pd
 from trendsapi import TrendsAPI
 
-df = pd.DataFrame(TrendsAPI().get_time_series(source="google search", keyword="solar battery"))
+df = pd.DataFrame(asdict(p) for p in TrendsAPI().get_time_series(source="google search", keyword="solar battery"))
 df["date"] = pd.to_datetime(df["date"])
 print(df.set_index("date")["value"].resample("ME").mean().tail())
 ```

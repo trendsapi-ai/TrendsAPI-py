@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "trendsapi"
-version = "1.0.1"
+version = "1.0.2"
 description = "Official Python client for the Trends API. Normalized 0-100 trend scores across Google, TikTok, Amazon, Reddit, YouTube, Steam, npm and 30+ sources. Sync + async, typed responses, free tier."
 readme = "README.md"
 license = "MIT"

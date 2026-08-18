@@ -128,7 +128,7 @@ class TrendsAPI:
         self._headers = {
             "Authorization": f"Bearer {_resolve_api_key(api_key)}",
             "Content-Type": "application/json",
-            "User-Agent": "trendsapi-python/1.0.0",
+            "User-Agent": "trendsapi-python/1.0.2",
         }
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
@@ -216,7 +216,7 @@ class AsyncTrendsAPI:
         self._headers = {
             "Authorization": f"Bearer {_resolve_api_key(api_key)}",
             "Content-Type": "application/json",
-            "User-Agent": "trendsapi-python/1.0.0",
+            "User-Agent": "trendsapi-python/1.0.2",
         }
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
