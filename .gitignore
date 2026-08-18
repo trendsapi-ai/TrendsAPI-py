@@ -3,7 +3,9 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
-node_modules/
 dist/
 .env
+.pypirc
+.pytest_cache/
+.mypy_cache/
 .DS_Store

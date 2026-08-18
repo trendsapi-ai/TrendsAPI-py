@@ -5,7 +5,7 @@ Official Python client for [Trends API](https://trendsapi.ai). Three methods. De
 HTTP contract and field tables: [trendsapi-ai/trendsapi](https://github.com/trendsapi-ai/trendsapi).
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![PyPI](https://img.shields.io/badge/pip-trendsapi-blue.svg)](https://pypi.org/project/trendsapi/)
+[![PyPI](https://img.shields.io/pypi/v/trendsapi.svg)](https://pypi.org/project/trendsapi/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://trendsapi.ai)
 
 ## Authentication
