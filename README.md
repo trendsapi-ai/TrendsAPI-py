@@ -8,6 +8,14 @@ HTTP contract and field tables: [trendsapi-ai/trendsapi](https://github.com/tren
 [![PyPI](https://img.shields.io/pypi/v/trendsapi.svg)](https://pypi.org/project/trendsapi/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-yellow.svg)](https://trendsapi.ai)
 
+## First call
+
+```bash
+curl -X POST https://api.trendsapi.ai/api \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -d '{"mode":"get_growth","source":"tiktok","keyword":"matcha"}'
+```
+
 ## Authentication
 
 ```bash
