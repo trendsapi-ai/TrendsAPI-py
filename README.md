@@ -99,7 +99,7 @@ chart = client.get_top_trends(type="TikTok Trending Hashtags", limit=10)
 | `limit`, `offset`, `count` | Pagination |
 | `data` | `[rank, label]` rows |
 
-Optional `offset=`, `category=` (`Amazon Best Sellers by Category`, `Top Websites` only).
+Optional `offset=`, `category=` (the `by Category` boards and `Top Websites`).
 
 ## Keyword sources
 
@@ -107,20 +107,26 @@ Pass as `source=`. Full notes: [hub README](https://github.com/trendsapi-ai/tren
 
 | `source` | `keyword` |
 |---|---|
-| `google search`, `google images`, `google news`, `google shopping` | Any phrase |
-| `youtube` | Any phrase |
-| `tiktok` | Hashtag or topic |
-| `reddit` | Subreddit, no `r/` |
-| `amazon` | Product phrase |
-| `wikipedia` | Article title |
-| `news volume`, `news sentiment` | Any phrase |
-| `app downloads`, `app rankings` | Android bundle ID (`com.openai.chatgpt`) |
-| `npm` | Exact package name |
-| `steam` | Game display name |
+| `Google Search` | Any name or phrase (`electric vehicles`) |
+| `Google Images` | Any name or phrase (`electric vehicles`) |
+| `Google News` | Any name or phrase (`electric vehicles`) |
+| `Google Shopping` | Any name or phrase (`running shoes`) |
+| `YouTube` | Any name or phrase (`stanley cup`) |
+| `Wikipedia` | Any name or phrase (`Bitcoin`) |
+| `TikTok` | Any name or phrase (`booktok`) |
+| `Amazon` | Any name or phrase (`air fryer`) |
+| `Pinterest` | Any name or phrase (`matcha`) |
+| `npm` | Exact npmjs.com package name, case-sensitive (`langchain`) |
+| `Python` | Exact PyPI project name (`pandas`) |
+| `Steam` | Game display name in plain English, not a Steam App ID (`Elden Ring`) |
+| `App Downloads` | Android bundle ID only (the id= value on Google Play) (`com.openai.chatgpt`) |
+| `App Rankings` | Android bundle ID only (the id= value on Google Play) (`com.openai.chatgpt`) |
 
-## Live feeds
+This client covers the three keyword and board methods. The API also has `get_context` (what people are posting about a keyword) and `get_top_posts` (top posts for a hashtag, Business plan); call those over raw HTTP for now: [hub, get_context](https://github.com/trendsapi-ai/trendsapi#get_context).
 
-Pass as `type=` on `get_top_trends`. Exact strings: `Google Trends`, `Google News Top News`, `TikTok Trending Hashtags`, `TikTok Trending Searches`, `TikTok Shop Hot Products`, `YouTube Trending`, `X (Twitter) Trending`, `Reddit Hot Posts`, `Reddit World News`, `Wikipedia Trending`, `Amazon Best Sellers Top Rated`, `Amazon Best Sellers by Category`, `App Store Top Free`, `App Store Top Paid`, `Google Play`, `Top Websites`, `Spotify Top Podcasts`, `Steam Most Played`, `GitHub Trending Repos`, `IMDb MOVIEmeter`, `Open Library Trending Books`.
+## Live boards
+
+Pass as `type=` on `get_top_trends`. Exact strings: `Amazon Best Sellers Top Rated`, `Amazon Best Sellers by Category`, `App Store Top Free`, `App Store Top Paid`, `GitHub`, `Google News Top News`, `Google Play`, `Google Trends`, `Google Trends by Category`, `IMDb MOVIEmeter`, `Open Library Trending Books`, `Pinterest Trending`, `Pinterest Trending by Category`, `Polymarket Top Markets`, `Reddit Hot Posts`, `Reddit World News`, `Top Websites`, `Spotify Top Podcasts`, `Steam Most Played`, `Substack`, `Substack by Category`, `TikTok Trending Hashtags`, `TikTok Trending Hashtags by Category`, `TikTok Trending Searches`, `Wikipedia Trending`, `X (Twitter) Trending`, `YouTube Trending`.
 
 ## Async
 
